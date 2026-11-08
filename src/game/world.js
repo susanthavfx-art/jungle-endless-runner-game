@@ -8,6 +8,12 @@ const CHUNK_LENGTH = 16;
 const CHUNK_COUNT = 12;
 const TRACK_LENGTH = CHUNK_LENGTH * CHUNK_COUNT;
 const GROUND = 0.18;
+// Gameplay view: keep Kai smaller and lower in frame so the trail ahead stays readable.
+const PLAY_RUNNER_SCALE = 0.82;
+const PLAY_CAMERA = {
+  desktop: { position: [0, 10.5, 24], target: [0, 3.2, -17] },
+  mobile: { position: [0, 10.8, 24.5], target: [0, 3.2, -17] },
+};
 
 const cylinder = new THREE.CylinderGeometry(1, 1, 1, 7);
 const rock = new THREE.DodecahedronGeometry(1, 0);
@@ -392,9 +398,10 @@ export class JungleWorld {
     this.menuBlend += (target - this.menuBlend) * (1 - Math.exp(-4 * dt));
     const t = this.menuBlend;
     const home = this.mobile ? [-4.2, 4, 17.5] : [-5.5, 3.8, 14.5];
-    const play = this.mobile ? [0, 8.2, 19.5] : [0, 7.4, 17.5];
+    const view = this.mobile ? PLAY_CAMERA.mobile : PLAY_CAMERA.desktop;
+    const play = view.position;
     const homeTarget = this.mobile ? [-0.6, 0.4, -2] : [2.2, 1.1, -6];
-    const playTarget = [engine.x * 0.12, 1, -14];
+    const playTarget = [engine.x * 0.12, view.target[1], view.target[2]];
     this.camera.position.set(...home.map((value, i) => THREE.MathUtils.lerp(play[i], value, t)));
     this.lookTarget.set(...homeTarget.map((value, i) => THREE.MathUtils.lerp(playTarget[i], value, t)));
     this.camera.lookAt(this.lookTarget);
@@ -417,12 +424,12 @@ export class JungleWorld {
       this.runner.position.y = GROUND + engine.y;
       const targetRotation = home ? -0.55 : Math.PI + (engine.lane * CONFIG.laneWidth - engine.x) * -0.1;
       this.runner.rotation.y += (targetRotation - this.runner.rotation.y) * (1 - Math.exp(-9 * dt));
-      const scale = home ? (this.mobile ? 0.86 : 1.05) : 1;
+      const scale = home ? (this.mobile ? 0.86 : 1.05) : PLAY_RUNNER_SCALE;
       this.runner.scale.lerp(new THREE.Vector3(scale, scale, scale), 1 - Math.exp(-5 * dt));
       if (active && (engine.state === 'running' || engine.state === 'ready')) this.mixer.update(dt);
       this.shadow.position.x = this.runner.position.x;
       this.shadow.material.opacity = Math.max(0.12, 0.7 - engine.y * 0.2);
-      this.shadow.scale.setScalar(1 + engine.y * 0.15);
+      this.shadow.scale.setScalar(this.runner.scale.x * (1 + engine.y * 0.15));
     }
     const visible = new Set();
     for (const entity of engine.entities) {
