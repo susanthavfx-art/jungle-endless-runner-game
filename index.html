@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#123e2c" />
+    <meta name="description" content="The wild is calling. Run, jump and collect golden coins in a lush 3D jungle. Play with your keyboard or swipe on your phone." />
+    <title>Jungle Run — The Lost River</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <main id="app" data-state="loading">
+      <div id="world" aria-label="3D jungle running game. Use arrow keys or the touch controls to move and jump." role="img"></div>
+      <div class="scene-shade" aria-hidden="true"></div>
+
+      <section id="loading-screen" class="loading-screen" aria-live="polite">
+        <div class="loading-emblem"><i data-lucide="leaf"></i></div>
+        <h1>JUNGLE RUN</h1>
+        <p id="loading-message">Finding a trail through the wild…</p>
+        <div class="loading-track"><div id="loading-progress"></div></div>
+        <button id="reload-button" class="button button-gold" hidden>Try again</button>
+      </section>
+
+      <section id="home-screen" class="home-screen" aria-label="Start menu" hidden>
+        <header class="topbar">
+          <a class="brand" href="./" aria-label="Jungle Run home">
+            <span class="brand-mark"><i data-lucide="leaf"></i></span>
+            <span>JUNGLE RUN<small>AN ENDLESS ADVENTURE</small></span>
+          </a>
+          <div class="topbar-actions">
+            <div class="best-pill"><i data-lucide="trophy"></i><span>PERSONAL BEST<strong id="home-best">0</strong></span></div>
+            <button class="icon-button sound-toggle" aria-label="Turn sound on" aria-pressed="false" title="Sound"><i data-lucide="volume-x"></i></button>
+            <button class="icon-button help-button" aria-label="How to play" title="How to play"><i data-lucide="circle-help"></i></button>
+          </div>
+        </header>
+
+        <div class="home-copy">
+          <div class="eyebrow"><span class="live-dot"></span> THE LOST RIVER <span class="eyebrow-line"></span></div>
+          <h1 class="game-title"><span>JUNGLE</span><strong>RUN</strong></h1>
+          <h2>The wild is calling.</h2>
+          <p>Dash through the jungle, chase golden coins,<br class="desktop-break" /> and see how far you can go.</p>
+          <div class="home-actions">
+            <button id="start-button" class="button button-gold start-button"><i data-lucide="play" class="filled-icon"></i><span>Start Game</span><i data-lucide="arrow-right"></i></button>
+            <button class="text-button help-button"><i data-lucide="circle-play"></i> How to play</button>
+          </div>
+          <div class="adventure-note"><i data-lucide="sparkles"></i> 3 lanes. Big jumps. Endless adventure.</div>
+        </div>
+
+        <div class="runner-label"><span class="runner-avatar"><i data-lucide="footprints"></i></span><span><small>MEET YOUR RUNNER</small><strong>Kai, the jungle explorer</strong></span><span class="ready-dot"></span></div>
+        <footer class="home-footer">
+          <div class="quick-controls"><span><i data-lucide="move-horizontal"></i> Swipe to move</span><span><i data-lucide="move-up"></i> Swipe up to jump</span><span><i data-lucide="coins"></i> Collect coins</span></div>
+          <span class="footer-note"><span class="live-dot"></span> NO DOWNLOAD. JUST ADVENTURE.</span>
+        </footer>
+      </section>
+
+      <section id="game-hud" class="game-hud" aria-label="Game status and controls" hidden>
+        <header class="hud-top">
+          <div class="score-panel"><div><span class="hud-label">SCORE</span><strong id="score-value">000000</strong></div><span class="score-divider"></span><div class="coin-score"><span class="coin-icon"><i data-lucide="leaf"></i></span><strong id="coin-value">0</strong></div><div class="distance-row"><i data-lucide="flag"></i><span id="distance-value">0 m</span><span>THE LOST RIVER</span></div></div>
+          <div class="hud-actions"><button class="icon-button sound-toggle" aria-label="Turn sound on" aria-pressed="false" title="Sound"><i data-lucide="volume-x"></i></button><button id="pause-button" class="icon-button" aria-label="Pause game" title="Pause (P / Esc)"><i data-lucide="pause"></i></button></div>
+        </header>
+        <div id="game-toast" class="game-toast" role="status"></div>
+        <div class="touch-controls" aria-label="Touch controls">
+          <button id="left-button" class="control-button" aria-label="Move left"><i data-lucide="arrow-left"></i><span>LEFT <kbd>← / A</kbd></span></button>
+          <button id="jump-button" class="control-button jump-control" aria-label="Jump"><i data-lucide="arrow-up"></i><span>JUMP <kbd>↑ / SPACE</kbd></span></button>
+          <button id="right-button" class="control-button" aria-label="Move right"><i data-lucide="arrow-right"></i><span>RIGHT <kbd>→ / D</kbd></span></button>
+        </div>
+        <p class="swipe-hint">Swipe to move · Swipe up or tap to jump</p>
+      </section>
+
+      <section id="pause-screen" class="modal-layer" aria-label="Game paused" hidden>
+        <div class="modal-card pause-card" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+          <span class="modal-emblem"><i data-lucide="pause"></i></span><span class="eyebrow centered">ADVENTURE ON HOLD</span>
+          <h2 id="pause-title">Take a breather.</h2><p>The jungle will be right here.</p>
+          <button id="resume-button" class="button button-gold"><i data-lucide="play"></i> Resume run</button>
+          <button id="pause-restart-button" class="button button-outline"><i data-lucide="rotate-ccw"></i> Restart</button>
+          <button id="pause-home-button" class="text-button"><i data-lucide="house"></i> Back to camp</button>
+        </div>
+      </section>
+
+      <section id="gameover-screen" class="modal-layer" aria-label="Run finished" hidden>
+        <div class="modal-card result-card" role="dialog" aria-modal="true" aria-labelledby="result-title">
+          <span class="modal-emblem"><i data-lucide="flag"></i></span><span class="eyebrow centered">EVERY RUN IS AN ADVENTURE</span>
+          <h2 id="result-title">What a run!</h2><p id="result-message">A fallen log caught you. Jump a little earlier!</p>
+          <div id="new-best" class="new-best" hidden><i data-lucide="trophy"></i> NEW PERSONAL BEST!</div>
+          <div class="result-score"><span>YOUR SCORE</span><strong id="result-score">0</strong></div>
+          <div class="result-stats"><div><i data-lucide="coins"></i><strong id="result-coins">0</strong><span>COINS</span></div><div><i data-lucide="route"></i><strong id="result-distance">0 m</strong><span>DISTANCE</span></div><div><i data-lucide="trophy"></i><strong id="result-best">0</strong><span>BEST</span></div></div>
+          <button id="retry-button" class="button button-gold"><i data-lucide="rotate-ccw"></i> Run again</button>
+          <button id="result-home-button" class="text-button"><i data-lucide="house"></i> Back to camp</button>
+        </div>
+      </section>
+
+      <dialog id="help-dialog" class="help-dialog" aria-labelledby="help-title">
+        <button id="close-help-button" class="icon-button close-dialog" aria-label="Close instructions"><i data-lucide="x"></i></button>
+        <span class="eyebrow centered">A QUICK FIELD GUIDE</span><h2 id="help-title">Run on the wild side.</h2><p>Three lanes. One rule: keep moving.</p>
+        <div class="help-controls"><div><i data-lucide="keyboard"></i><strong>Keyboard</strong><span>← → or A / D to switch lanes<br />↑, W or Space to jump<br />P or Esc to pause</span></div><div><i data-lucide="smartphone"></i><strong>Touch screen</strong><span>Swipe left or right to move<br />Swipe up or tap to jump<br />Or use the on-screen buttons</span></div></div>
+        <div class="field-guide"><div><span class="guide-icon gold"><i data-lucide="coins"></i></span><span><strong>Chase the gold</strong><small>Each coin adds 25 points. Distance adds points too.</small></span></div><div><span class="guide-icon wood"><i data-lucide="logs"></i></span><span><strong>Jump logs & rocks</strong><small>Time your jump just before the obstacle.</small></span></div><div><span class="guide-icon stone"><i data-lucide="landmark"></i></span><span><strong>Dodge the tall ruins</strong><small>These are too high to jump. Switch to a clear lane.</small></span></div></div>
+        <button id="got-it-button" class="button button-gold">Got it. Let’s go! <i data-lucide="arrow-right"></i></button>
+      </dialog>
+      <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
