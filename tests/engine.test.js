@@ -93,6 +93,49 @@ test('tall ruins cannot be jumped and require a lane change', () => {
   assert.equal(dodged.state, 'running');
 });
 
+test('a broken bridge gap ends the run, but a jump or lane change survives', () => {
+  const fell = running();
+  fell.entities = [];
+  fell.addGap(0, 6, 3.4);
+  advance(fell, 1);
+  assert.equal(fell.state, 'over');
+  assert.ok(fell.drainEvents().some((event) => event.type === 'hit' && event.obstacle === 'gap'));
+
+  const jumped = running();
+  jumped.entities = [];
+  jumped.addGap(0, 6, 3.4);
+  advance(jumped, 0.28);
+  jumped.jump();
+  advance(jumped, 0.6);
+  assert.equal(jumped.state, 'running');
+  assert.ok(jumped.distance > 8);
+
+  const dodged = running();
+  dodged.entities = [];
+  dodged.addGap(0, 6, 3.4);
+  dodged.move(1);
+  advance(dodged, 1);
+  assert.equal(dodged.state, 'running');
+});
+
+test('a crocodile bite ends the run, but a well-timed jump clears it', () => {
+  const bitten = running();
+  bitten.entities = [];
+  bitten.addCrocodile(0, 6);
+  advance(bitten, 1);
+  assert.equal(bitten.state, 'over');
+  assert.ok(bitten.drainEvents().some((event) => event.type === 'hit' && event.obstacle === 'crocodile'));
+
+  const jumped = running();
+  jumped.entities = [];
+  jumped.addCrocodile(0, 6);
+  advance(jumped, 0.28);
+  jumped.jump();
+  advance(jumped, 0.5);
+  assert.equal(jumped.state, 'running');
+  assert.ok(jumped.distance > 8);
+});
+
 test('pause freezes distance, jump physics and input; resume continues', () => {
   const engine = running();
   engine.entities = [];
@@ -136,7 +179,7 @@ test('generated rows always leave a clear lane and stay bounded over a long run'
     maxEntities = Math.max(maxEntities, engine.entities.length);
     if (engine.state === 'over') {
       const obstacle = engine.entities.find((entity) => entity.kind === 'obstacle' && Math.abs(entity.at - engine.distance) < 2);
-      const safe = [-1, 0, 1].some((lane) => !engine.entities.some((entity) => entity.kind === 'obstacle' && entity.lane === lane && Math.abs(entity.at - engine.distance) < 2));
+      const safe = [-1, 0, 1].some((lane) => !engine.entities.some((entity) => ['obstacle', 'gap', 'croc'].includes(entity.kind) && entity.lane === lane && Math.abs(entity.at - engine.distance) < 2));
       assert.ok(safe, 'a clear lane must exist at the collision row');
       engine.start();
       engine.entities = [];
@@ -146,6 +189,19 @@ test('generated rows always leave a clear lane and stay bounded over a long run'
   }
   assert.ok(maxEntities < 120, `entity count stayed bounded (${maxEntities})`);
   assert.ok(engine.speed <= CONFIG.maxSpeed);
+});
+
+test('generated trail introduces gaps and crocodiles after the opening logs', () => {
+  const engine = new RunnerEngine(7);
+  const kinds = new Set(engine.entities.map((entity) => entity.kind));
+  assert.ok(kinds.has('coin'));
+  assert.ok(kinds.has('obstacle'));
+  assert.ok(kinds.has('gap'));
+  assert.ok(kinds.has('croc'));
+  const firstGap = engine.entities.filter((e) => e.kind === 'gap').sort((a, b) => a.at - b.at)[0];
+  const firstCroc = engine.entities.filter((e) => e.kind === 'croc').sort((a, b) => a.at - b.at)[0];
+  assert.ok(firstGap.at > 90);
+  assert.ok(firstCroc.at > firstGap.at);
 });
 
 test('seeded generation is repeatable', () => {

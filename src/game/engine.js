@@ -97,19 +97,37 @@ export class RunnerEngine {
     this.entities.push({ id: this.nextId++, kind: 'obstacle', type, lane, at, ...dimensions });
   }
 
+  addGap(lane, at, depth = 3.4) {
+    this.entities.push({ id: this.nextId++, kind: 'gap', lane, at, depth });
+  }
+
+  addCrocodile(lane, at) {
+    this.entities.push({ id: this.nextId++, kind: 'croc', lane, at, depth: 1.7, clearance: 0.95 });
+  }
+
   populateAhead() {
     while (this.nextRow < this.distance + CONFIG.lookAhead) {
       const safeLane = this.row === 2 ? 0 : Math.floor(this.random() * 3) - 1;
       const otherLanes = [-1, 0, 1].filter((lane) => lane !== safeLane);
       if (this.random() > 0.5) otherLanes.reverse();
       const count = this.row < 3 || this.random() < 0.48 ? 1 : 2;
+      const rowKind = this.row < 3 ? 'obstacle' : this.row === 3 ? 'gap' : this.row === 4 ? 'croc' : (() => {
+        const roll = this.random();
+        return roll < 0.42 ? 'obstacle' : roll < 0.72 ? 'gap' : 'croc';
+      })();
       for (let i = 0; i < count; i++) {
-        const choice = this.random();
-        const type = this.row < 3 ? 'log' : choice < 0.48 ? 'log' : choice < 0.8 ? 'rock' : 'ruins';
-        this.addObstacle(otherLanes[i], this.nextRow, type);
+        if (rowKind === 'gap') {
+          this.addGap(otherLanes[i], this.nextRow, 3.2 + Math.floor(this.random() * 5) * 0.2);
+        } else if (rowKind === 'croc') {
+          this.addCrocodile(otherLanes[i], this.nextRow);
+        } else {
+          const choice = this.random();
+          const type = this.row < 3 ? 'log' : choice < 0.48 ? 'log' : choice < 0.8 ? 'rock' : 'ruins';
+          this.addObstacle(otherLanes[i], this.nextRow, type);
+        }
       }
       for (let i = 0; i < 5; i++) this.addCoin(safeLane, this.nextRow - 5 + i * 2.5);
-      this.nextRow += 23 + Math.floor(this.random() * 8);
+      this.nextRow += 24 + Math.floor(this.random() * 8);
       this.row++;
     }
   }
@@ -153,6 +171,21 @@ export class RunnerEngine {
           break;
         }
         if (entity.at < this.distance - 1.5) entity.passed = true;
+      } else if (entity.kind === 'croc' && !entity.passed) {
+        if (forwardDistance < entity.depth / 2 + 0.34 && lateralDistance < 0.87 && this.y < entity.clearance) {
+          this.state = 'over';
+          this.events.push({ type: 'hit', obstacle: 'crocodile' });
+          break;
+        }
+        if (entity.at < this.distance - 1.5) entity.passed = true;
+      } else if (entity.kind === 'gap' && !entity.passed) {
+        // Fall only while actually over the hole and too low to clear it.
+        if (forwardDistance < entity.depth / 2 - 0.12 && lateralDistance < 0.92 && this.y < 0.45) {
+          this.state = 'over';
+          this.events.push({ type: 'hit', obstacle: 'gap' });
+          break;
+        }
+        if (entity.at < this.distance - entity.depth / 2 - 1) entity.passed = true;
       }
     }
     this.score = Math.floor(this.distance * 2) + this.coins * 25;
