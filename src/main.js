@@ -1,12 +1,12 @@
 import './style.css';
-import { createIcons, Leaf, Trophy, VolumeX, Volume2, CircleHelp, Play, ArrowRight, ArrowLeft, ArrowUp, CirclePlay, Sparkles, Footprints, MoveHorizontal, MoveUp, Coins, Flag, Pause, RotateCcw, House, Route, X, Keyboard, Smartphone, Logs, Landmark } from 'lucide';
+import { createIcons, Leaf, Trophy, VolumeX, Volume2, CircleHelp, Play, ArrowRight, ArrowLeft, ArrowUp, CirclePlay, Sparkles, Footprints, MoveHorizontal, MoveUp, Coins, Flag, Pause, RotateCcw, House, Route, X, Keyboard, Smartphone, Logs, Landmark, Waves, Skull } from 'lucide';
 import { RunnerEngine, CONFIG } from './game/engine.js';
 import { JungleWorld } from './game/world.js';
 import { JungleAudio } from './game/audio.js';
 import { bindInput } from './game/input.js';
 import { readPreferences, writePreferences } from './game/storage.js';
 
-const icons = { Leaf, Trophy, VolumeX, Volume2, CircleHelp, Play, ArrowRight, ArrowLeft, ArrowUp, CirclePlay, Sparkles, Footprints, MoveHorizontal, MoveUp, Coins, Flag, Pause, RotateCcw, House, Route, X, Keyboard, Smartphone, Logs, Landmark };
+const icons = { Leaf, Trophy, VolumeX, Volume2, CircleHelp, Play, ArrowRight, ArrowLeft, ArrowUp, CirclePlay, Sparkles, Footprints, MoveHorizontal, MoveUp, Coins, Flag, Pause, RotateCcw, House, Route, X, Keyboard, Smartphone, Logs, Landmark, Waves, Skull };
 const refreshIcons = () => createIcons({ icons, attrs: { 'aria-hidden': 'true' } });
 refreshIcons();
 const $ = (selector) => document.querySelector(selector);
@@ -118,7 +118,13 @@ function finishRun(obstacle) {
   $('#result-coins').textContent = engine.coins;
   $('#result-distance').textContent = `${Math.floor(engine.distance)} m`;
   $('#result-best').textContent = preferences.best.toLocaleString();
-  $('#result-message').textContent = obstacle === 'ruins' ? 'Those ruins are too tall to jump. Try a clear lane!' : obstacle === 'rock' ? 'That rock came up fast. Jump a little earlier!' : 'A fallen log caught you. Time your next jump!';
+  const messages = {
+    ruins: 'Those ruins are too tall to jump. Try a clear lane!',
+    rock: 'That rock came up fast. Jump a little earlier!',
+    crocodile: 'Snap! A crocodile caught you. Jump over it or switch lanes.',
+    gap: 'The bridge gave way beneath you. Jump the broken span or take a safe lane!',
+  };
+  $('#result-message').textContent = messages[obstacle] || 'A fallen log caught you. Time your next jump!';
   setState('over');
   $('#retry-button').focus({ preventScroll: true });
   announce(`Run finished. Score ${engine.score}, ${engine.coins} coins, ${Math.floor(engine.distance)} metres.${isBest ? ' New personal best!' : ''}`);
